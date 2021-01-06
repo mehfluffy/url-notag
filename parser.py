@@ -9,7 +9,7 @@ def has_tag(url):
     matches.append(and_tag.search(url))  # check '&' before '?' due to Youtube
     
     if not re.compile('youtube.com/watch').search(url):  # make whitelist of URLs, n.b. Youtube channels can have '?' tags, see https://stackoverflow.com/questions/6259443/how-to-match-a-line-not-containing-a-word
-        general_tag = re.compile('\?|((%3)F)')  # most sites use '?' or %3F (separate 3 and F due to python string formatting)
+        general_tag = re.compile('\?|((%3)F)')  # most sites use '?' or %3F (separate %3 and F due to python string format)
         matches.append(general_tag.search(url))
     
     indices = [m.span()[0] for m in matches if m is not None]
@@ -22,7 +22,7 @@ def delete_tag(url, indices):
 
 
 def is_redirect(url):
-    url_tag = re.compile('u.*[=|(%3D)]http')  # Google uses /url?...=http, Facebook uses ?u=http, others use ?url=http  (see https://nakedsecurity.sophos.com/2020/05/15/how-scammers-abuse-google-searchs-open-redirect-feature/, https://web.archive.org/web/20110817024348/http://blog.anta.net/2009/01/29/509/)
+    url_tag = re.compile('[=|(%3D)]http')  # Google uses /url?...=http, Facebook uses ?u=http, others use ?url=http  (see https://nakedsecurity.sophos.com/2020/05/15/how-scammers-abuse-google-searchs-open-redirect-feature/, https://web.archive.org/web/20110817024348/http://blog.anta.net/2009/01/29/509/)
     match = url_tag.search(url)
     return match
 
@@ -33,7 +33,7 @@ def extract_redirect(url):
 
 
 def in_unicode(url):
-    return re.compile(r'(%\w)+').search(url)
+    return re.compile('(%\w)+').search(url)
 
 
 def decode_url(url):
