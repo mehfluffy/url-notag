@@ -32,7 +32,6 @@ def extract_redirect(url):
     return url[start:]
 
 def is_amp(url):
-    # https://medium.com/@danbuben/why-amp-is-bad-for-your-site-and-for-the-web-e4d060a4ff31
     # Types of AMP links https://searchengineland.com/amp-links-large-281987
     amp = re.compile('(cdn\.ampproject\.org)|(/amp)')  # /amp includes also amp. since it's usually https://amp.domain.tld/whatever
     match = amp.search(url)
