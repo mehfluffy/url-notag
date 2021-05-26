@@ -33,12 +33,12 @@ def extract_redirect(url):
 
 def is_amp(url):
     # Types of AMP links https://searchengineland.com/amp-links-large-281987
-    amp = re.compile('(cdn\.ampproject\.org)|(/amp)')  # /amp includes also amp. since it's usually https://amp.domain.tld/whatever
+    amp = re.compile('(cdn\.ampproject\.org)|(//amp.)|(/amp/?$)')  # /amp includes also amp. since it's usually https://amp.domain.tld/whatever
     match = amp.search(url)
     return match
 
 def delele_amp(url):
-    cache_amp = re.compile('cdn\.ampproject\.org/(c/)?')
+    cache_amp = re.compile('cdn\.ampproject\.org/(c/)?(s/)?')
     google_amp = re.compile('google\.(\w)+/amp/(s/)?')  # Sometimes the s does not appear in google.com/amp/s/domain.tld/whatever
     origin_amp_prepended = re.compile('amp\.')
     
@@ -49,7 +49,7 @@ def delele_amp(url):
             indices.append(match.span()[-1])
     url = url[max(indices):]
 
-    origin_amp_appended = re.compile('/amp(\w)+/?$')  # \w ensures no symbols like dots and dash, end slash optional, $ means end of string
+    origin_amp_appended = re.compile('/amp(/)?$')  # end slash optional, $ means end of string
     match = origin_amp_appended.search(url)
     if match:
         end = match.span()[0]
