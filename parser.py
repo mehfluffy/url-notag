@@ -3,22 +3,20 @@ from urllib.parse import unquote
 
 
 def has_tag(url):
-    matches = []
-    
-    and_tag = re.compile('&[\D]+=.+')  # https://webapps.stackexchange.com/questions/9863/are-the-parameters-for-www-youtube-com-watch-documented
-    matches.append(and_tag.search(url))  # check '&' before '?' due to Youtube
-    
-    if not re.compile('youtube.com/watch').search(url):  # make whitelist of URLs, n.b. Youtube channels can have '?' tags, see https://stackoverflow.com/questions/6259443/how-to-match-a-line-not-containing-a-word
+    and_tag = re.compile('&[\D]+=')  # https://webapps.stackexchange.com/questions/9863/are-the-parameters-for-www-youtube-com-watch-documented
+    match = and_tag.search(url)  # check '&' before '?' due to Youtube
+    if not re.compile('youtube.com/watch').search(url):  # need whitelist of URLs, n.b. Youtube channels can have '?' tags, see https://stackoverflow.com/questions/6259443/how-to-match-a-line-not-containing-a-word
         general_tag = re.compile('\?|((%3)F)')  # most sites use '?' or %3F (separate %3 and F due to python string format)
-        matches.append(general_tag.search(url))
-    
-    indices = [m.span()[0] for m in matches if m is not None]
-    return indices
+        match = general_tag.search(url)
+    return match
 
-
-def delete_tag(url, indices):
-    end = min(indices)
-    return url[:end]
+def delete_tag(url):
+    and_tag = re.compile('&[\D]+=(.+)')
+    url = re.sub(and_tag, '', url)
+    if not re.compile('youtube.com/watch').search(url):
+        general_tag = re.compile('(\?|((%3)F))(.+)')
+        url = re.sub(general_tag, '', url)
+    return url
 
 
 def is_redirect(url):
@@ -28,8 +26,9 @@ def is_redirect(url):
 
 
 def extract_redirect(url):
-    start = re.compile('[=|(%3D)]http').search(url).span()[0] + 1  # span gives the start,end tuple. +1 to slice from http, not =http
-    return url[start:]
+    url = re.sub('(.+)[=|(%3D)]http', 'http', url)
+    return url
+
 
 def is_amp(url):
     # Types of AMP links https://searchengineland.com/amp-links-large-281987
@@ -37,25 +36,18 @@ def is_amp(url):
     match = amp.search(url)
     return match
 
-def delele_amp(url):
-    cache_amp = re.compile('cdn\.ampproject\.org/(c/)?(s/)?')
-    google_amp = re.compile('google\.(\w)+/amp/(s/)?')  # Sometimes the s does not appear in google.com/amp/s/domain.tld/whatever
-    origin_amp_prepended = re.compile('amp\.')
-    
-    indices = []
-    for amp in [cache_amp, google_amp, origin_amp_prepended]:  # all are prepended tags
-        match = amp.search(url)
-        if match:
-            indices.append(match.span()[-1])
-    url = url[max(indices):]
 
+def delele_amp(url):
+    cache_amp = re.compile('(.+)cdn\.ampproject\.org/(c/)?(s/)?')
+    google_amp = re.compile('(.+)google\.(\w)+/amp/(s/)?')  # Sometimes the s does not appear in google.com/amp/s/domain.tld/whatever
+    origin_amp_prepended = re.compile('(.+)amp\.')
     origin_amp_appended = re.compile('/amp(/)?$')  # end slash optional, $ means end of string
-    match = origin_amp_appended.search(url)
-    if match:
-        end = match.span()[0]
-    else:
-        end = None
-    return 'https://' + url[:end]
+    
+    for amp in [cache_amp, google_amp, origin_amp_prepended, origin_amp_appended]:
+        url = re.sub(amp, '', url)
+    if not re.match('http', url):  # re.match() only matches beginning of string
+        url = 'https://' + url
+    return url
 
 
 def in_unicode(url):
@@ -71,12 +63,9 @@ def parser(url):
         url = extract_redirect(url)
     if is_amp(url):
         url = delele_amp(url)
-
-    tag_indices = has_tag(url)
-    if tag_indices:
-        url = delete_tag(url, tag_indices)
-
-    if in_unicode(url):  # if decode first, saves the 'or' in tags & redirects but might be slower
+    if has_tag(url):
+        url = delete_tag(url)
+    if in_unicode(url):  # if decode first, saves the 'or' in tags & redirects but might be slower (need to test this)
         url = decode_unicode(url)
     # force https?
     return url
