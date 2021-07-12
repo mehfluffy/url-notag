@@ -5,7 +5,7 @@ Remove tracking redirects/tags from URLs, changes it to lead to the non-[AMP](ht
 * Sharing links, as in facebook.com/share.php?u=https%3A%2F%2Fmydomain.com
 * Redirect after registration/sign-in links
 * Other links containing useful tags that make use of '?' or '&', e.g.
-    * economist.com/api/my-account?newsletter=1&auth=1
+    * https://economist.com/api/my-account?newsletter=1&auth=1
     * Youtube playlist tag (see also https://webapps.stackexchange.com/questions/9863/are-the-parameters-for-www-youtube-com-watch-documented)
     * duckduckgo.com/?q=mysearchstring
 * AMP links that have been shortened, e.g. 
@@ -16,3 +16,5 @@ Remove tracking redirects/tags from URLs, changes it to lead to the non-[AMP](ht
 * Force https option
 * Mailing list click-tracking links usually don't have tags, just one big hash
 * Implement as chatbot or browser plugin
+* Automated testing using URLs scraped from webpages ([beautiful soup](https://beautiful-soup-4.readthedocs.io/en/latest/))
+* Detect broken links
